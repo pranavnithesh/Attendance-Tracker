@@ -64,7 +64,9 @@ Follow these instructions to get a copy of the project up and running on your lo
 ### Contact
 
 **For more information, feel free to reach out**:
+
 Email: pranavnithesh@gmail.com
+
 LinkedIn: [Click Here](linkedin.com/in/pranavnithesh)
 
 
