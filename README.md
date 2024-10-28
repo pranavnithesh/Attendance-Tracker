@@ -11,7 +11,7 @@ A sleek and efficient attendance tracking app designed to simplify tracking and 
 
 ## Screenshots
 
-| Main Screen | Attendance Summary | Settings |
+| Main Screen | Selection Screen | Attendance Summary |
 |-------------|--------------------|----------|
 | ![Main Screen](screenshots/main_screen.png) | ![Selection Screen](screenshots/summary_screen.png) | ![Attendance Summary](screenshots/settings_screen.png) |
 
