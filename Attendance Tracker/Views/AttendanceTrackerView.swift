@@ -17,54 +17,54 @@ struct AttendanceTrackerView: View {
     @State private var showSummary = false
     
     var body: some View {
-        VStack {
-            Text("Attendance Tracker")
-                .font(.largeTitle)
-                .bold()
-                .foregroundColor(.blue)
-                .padding(.bottom)
-            headerView
-            weekdayHeader
-            calendarGrid
-            attendancePercentageView
-            Text("Days needed this week to maintain 60%: \(viewModel.requiredDays)")
-                .foregroundColor(.purple)
-                .font(.headline)
-                .lineLimit(1)
-                .truncationMode(.tail)
+        ScrollView {
+            VStack {
+                Text("Attendance Tracker")
+                    .font(.largeTitle)
+                    .bold()
+                    .foregroundColor(.blue)
+                    .padding(.bottom)
+                headerView
+                weekdayHeader
+                calendarGrid
+                attendancePercentageView
+                Text("Days needed this week to maintain 60%: \(viewModel.requiredDays)")
+                    .foregroundColor(.purple)
+                    .font(.headline)
+                    .truncationMode(.tail)
+            }
+            .confirmationDialog("Select Attendance", isPresented: $showingDialog, titleVisibility: .visible) {
+                Button("Office") {
+                    viewModel.updateAttendance(for: selectedAttendanceDate!, with: .office)
+                }
+                Button("Leave") {
+                    viewModel.updateAttendance(for: selectedAttendanceDate!, with: .leave)
+                }
+                Button("Holiday") {
+                    viewModel.updateAttendance(for: selectedAttendanceDate!, with: .holiday)
+                }
+                Button("WFH") {
+                    viewModel.updateAttendance(for: selectedAttendanceDate!, with: .wfh)
+                }
+                Button("No Selection") {
+                    viewModel.updateAttendance(for: selectedAttendanceDate!, with: .noSelection)
+                }
+                Button("Cancel", role: .cancel) { }
+            }
+            .padding()
         }
-        .confirmationDialog("Select Attendance", isPresented: $showingDialog, titleVisibility: .visible) {
-            Button("Office") {
-                viewModel.updateAttendance(for: selectedAttendanceDate!, with: .office)
-            }
-            Button("Leave") {
-                viewModel.updateAttendance(for: selectedAttendanceDate!, with: .leave)
-            }
-            Button("Holiday") {
-                viewModel.updateAttendance(for: selectedAttendanceDate!, with: .holiday)
-            }
-            Button("WFH") {
-                viewModel.updateAttendance(for: selectedAttendanceDate!, with: .wfh)
-            }
-            Button("No Selection") {
-                viewModel.updateAttendance(for: selectedAttendanceDate!, with: .noSelection)
-            }
-            Button("Cancel", role: .cancel) { }
-        }
-        .padding()
     }
     
     private var summaryView: some View {
         let statuses = AttendanceStatus.allCases
         let (stsrtDate, endDate) = viewModel.getFirstAndLastDay()
-        return HStack {
+        return ScrollView {
             VStack(alignment: .leading) {
                 Text("Summary")
                     .font(.title3)
-                    .foregroundColor(.primary)
-                    .padding(.bottom)
+                    .foregroundColor(Color("PrimaryTextColor"))
+                    .padding(.bottom, 8)
                 Text("Attendance recorded from \(stsrtDate) to \(endDate)")
-                    .lineLimit(/*@START_MENU_TOKEN@*/2/*@END_MENU_TOKEN@*/)
                     .font(.headline)
                     .foregroundColor(.red)
                 ForEach(statuses) { status in
@@ -72,7 +72,7 @@ struct AttendanceTrackerView: View {
                         HStack {
                             Rectangle()
                                 .fill(status.color)
-                                .frame(width: 15, height: 15)
+                                .frame(width: 20, height: 20)
                             Text("\(status.rawValue) - \(viewModel.getNumberOfDays(for: status)) Day(s)")
                                 .font(.headline)
                                 .foregroundColor(.primary)
@@ -81,8 +81,7 @@ struct AttendanceTrackerView: View {
                     }
                 }
             }
-            .padding(.bottom)
-            .padding(.leading)
+            .padding()
         }
     }
     
@@ -140,7 +139,8 @@ struct AttendanceTrackerView: View {
                 let day = viewModel.getCurrentDay(date: date)
                 
                 Text("\(day)")
-                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .frame(width: 40, height: 40)
+                    .font(.system(size: 22))
                     .background(isToday ? Color.yellow : status?.color)
                     .foregroundColor((status == .noSelection || status == nil) ? Color("PrimaryTextColor") : Color("PrimarySelectedTextColor"))
                     .cornerRadius(8)
@@ -164,9 +164,9 @@ struct AttendanceTrackerView: View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
         return LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(weekdayNames, id: \.self) { weekday in
-                Text(weekday)
-                    .font(.headline)
+            ForEach(weekdayNames.indices, id: \.self) { index in
+                Text(weekdayNames[index])
+                    .font(.system(size: 18))
                     .frame(maxWidth: .infinity)
                     .foregroundColor(.purple)
             }
@@ -179,7 +179,6 @@ struct AttendanceTrackerView: View {
         return HStack {
             Text("Attendance Percentage: \(viewModel.attendancePercentage, specifier: "%.2f")%")
                 .font(.title2)
-                .lineLimit(1)
                 .truncationMode(.tail)
                 .foregroundColor(color)
             
