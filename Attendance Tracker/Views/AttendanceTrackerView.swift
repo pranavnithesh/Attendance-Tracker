@@ -142,7 +142,7 @@ struct AttendanceTrackerView: View {
                 Text("\(day)")
                     .frame(maxWidth: .infinity, minHeight: 40)
                     .background(isToday ? Color.yellow : status?.color)
-                    .foregroundColor((status == .noSelection || status == nil) ? Color.black : Color.white)
+                    .foregroundColor((status == .noSelection || status == nil) ? Color("PrimaryTextColor") : Color("PrimarySelectedTextColor"))
                     .cornerRadius(8)
                     .disabled(true)
                     .onTapGesture {
