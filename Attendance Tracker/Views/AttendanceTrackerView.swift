@@ -146,14 +146,14 @@ struct AttendanceTrackerView: View {
                     .cornerRadius(8)
                     .disabled(true)
                     .onTapGesture {
-                        if last12WeeksRange.contains(date) {
+                        if last12WeeksRange.contains(viewModel.formatDate(date)) {
                             // This is where you handle the tap on valid dates
                             viewModel.selectedDate = date
                             selectAttendance(for: date)
                         }
                     }
-                    .opacity((last12WeeksRange.contains(date) && viewModel.isWeekday(date)) ? 1.0 : 0.5) // Visually disable by reducing opacity
-                    .allowsHitTesting(last12WeeksRange.contains(date) && viewModel.isWeekday(date)) // Disable tap on out-of-range dates
+                    .opacity((last12WeeksRange.contains(viewModel.formatDate(date)) && viewModel.isWeekday(date)) ? 1.0 : 0.5) // Visually disable by reducing opacity
+                    .allowsHitTesting(last12WeeksRange.contains(viewModel.formatDate(date)) && viewModel.isWeekday(date)) // Disable tap on out-of-range dates
             }
         }
         .padding(.top, 10)

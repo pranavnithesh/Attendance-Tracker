@@ -21,6 +21,7 @@ class AttendanceTrackerViewModel: ObservableObject {
     @Published var calendar: Calendar = {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "Asia/Kolkata")! // UTC+5:30
+        calendar.locale = Locale(identifier: "en_IN")
         return calendar
     }()
     
@@ -72,16 +73,16 @@ class AttendanceTrackerViewModel: ObservableObject {
     
     func getNumberOfDays(for status: AttendanceStatus) -> Int {
         let lastWeeksRange = getLastWeeksRange()
-        return records.filter { $0.status == status && lastWeeksRange.contains($0.date) }.count
+        return records.filter { $0.status == status && lastWeeksRange.contains(formatDate($0.date))}.count
     }
     
     func calculateAttendancePercentage() {
         let lastWeeksRange = getLastWeeksRange()
         let totalDays = records.filter { record in
             let weekday = calendar.component(.weekday, from: record.date)
-            return weekday != 1 && weekday != 7 && record.status != .wfh && lastWeeksRange.contains(record.date)
+            return weekday != 1 && weekday != 7 && record.status != .wfh && lastWeeksRange.contains(formatDate(record.date))
         }.count
-        let attendedDays = records.filter { ($0.status == .office || $0.status == .leave || $0.status == .holiday) && lastWeeksRange.contains($0.date) }.count
+        let attendedDays = records.filter { ($0.status == .office || $0.status == .leave || $0.status == .holiday) && lastWeeksRange.contains(formatDate($0.date)) }.count
         attendancePercentage = totalDays > 0 ? Double(attendedDays) / Double(totalDays) * 100 : 0
         requiredDays = calculateRequiredDays()
     }
@@ -91,11 +92,11 @@ class AttendanceTrackerViewModel: ObservableObject {
         let days = getLastWeeksRangeForRequiredDays()
         let totalDays = records.filter { record in
             let weekday = calendar.component(.weekday, from: record.date)
-            return weekday != 1 && weekday != 7 && record.status != .wfh && days.contains(record.date)
+            return weekday != 1 && weekday != 7 && record.status != .wfh && days.contains(formatDate(record.date))
         }.count
         
         let minimumAttendedDays = Int(ceil(Double(totalDays) * 0.6))
-        let attendedDays = records.filter { ($0.status == .office || $0.status == .leave || $0.status == .holiday) && days.contains($0.date)}.count
+        let attendedDays = records.filter { ($0.status == .office || $0.status == .leave || $0.status == .holiday) && days.contains(formatDate($0.date))}.count
         return max(minimumAttendedDays - attendedDays, 0)
     }
     
@@ -109,19 +110,25 @@ class AttendanceTrackerViewModel: ObservableObject {
     }
     
     /// Function to generate a range for the last 12 weeks
-    func getLastWeeksRange() -> ClosedRange<Date> {
+    func getLastWeeksRange() -> [String] {
         let today = Date()
         let lastFriday = getLastFriday(from: today)
         let firstFriday = calendar.date(byAdding: .weekOfYear, value: -12, to: lastFriday)!
         let startDate = calendar.date(byAdding: .day, value: 2, to: firstFriday)!
-        return startDate...lastFriday
+        var dates: [String] = []
+        var currentDate = startDate
+        while currentDate <= lastFriday {
+            dates.append(formatDate(currentDate))
+            currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
+        }
+        return dates
     }
     
     func getFirstAndLastDay() -> (String, String) {
         let today = Date()
         let endDate = getLastFriday(from: today)
         let firstFriday = calendar.date(byAdding: .weekOfYear, value: -12, to: endDate)!
-        let startDate = calendar.date(byAdding: .day, value: 2, to: firstFriday)!
+        let startDate = calendar.date(byAdding: .day, value: 3, to: firstFriday)!
         let formattedStartDate = formattedDate(from: startDate)
         let formattedEndDate = formattedDate(from: endDate)
         return (formattedStartDate, formattedEndDate)
@@ -137,20 +144,42 @@ class AttendanceTrackerViewModel: ObservableObject {
     }
     
     // Function to calculate the range of dates for the last 12 weeks
-    func getLast12WeeksRange() -> ClosedRange<Date> {
+    func getLast12WeeksRange() -> [String] {
         let today = Date()
         let lastFriday = getFriday(from: today)
         let firstFriday = calendar.date(byAdding: .weekOfYear, value: -13, to: lastFriday)!
         let startDate = calendar.date(byAdding: .day, value: 2, to: firstFriday)!
-        return startDate...lastFriday
+        var dates: [String] = []
+        var currentDate = startDate
+            while currentDate <= lastFriday {
+                dates.append(formatDate(currentDate))
+                currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
+            }
+            return dates
     }
     
-    func getLastWeeksRangeForRequiredDays() -> ClosedRange<Date> {
+    func formatDate(_ date: Date, format: String = "dd MMM yyyy") -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        dateFormatter.timeZone =  TimeZone(identifier: "Asia/Kolkata")
+        dateFormatter.locale = Locale(identifier: "en_IN")
+        return dateFormatter.string(from: date)
+    }
+    
+    func getLastWeeksRangeForRequiredDays() -> [String] {
         let today = Date()
         let lastFriday = getFriday(from: today)
         let firstFriday = calendar.date(byAdding: .weekOfYear, value: -12, to: lastFriday)!
-        let startDate = calendar.date(byAdding: .day, value: 2, to: firstFriday)!
-        return startDate...lastFriday
+        let startDate = calendar.date(byAdding: .day, value: 3, to: firstFriday)!
+        var dates: [String] = []
+        
+        var currentDate = startDate
+            while currentDate <= lastFriday {
+                dates.append(formatDate(currentDate))
+                currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
+            }
+
+            return dates
     }
     
     func isToday(date: Date) -> Bool {
